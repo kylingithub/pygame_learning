@@ -1,6 +1,10 @@
 import pygame
 import random
 
+SHOT_DELAY = 300
+
+YELLOW = (255, 255, 0)
+
 HEIGHT = 600
 
 WIDTH = 800
@@ -64,7 +68,7 @@ class Bullet(pygame.sprite.Sprite):
     def __init__(self, posx, posy):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface((5, 20))
-        self.image.fill((255, 255, 0))
+        self.image.fill(YELLOW)
         self.rect = self.image.get_rect()
         self.rect.centerx = posx
         self.rect.centery = posy
@@ -82,6 +86,8 @@ clock = pygame.time.Clock()
 
 meteors = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
+last_shot = pygame.time.get_ticks()
+now =0
 
 player = Player(WIDTH / 2, HEIGHT - 50)
 for i in range(8):
@@ -90,6 +96,19 @@ for i in range(8):
 all_sprites.add(player)
 all_sprites.add(meteors)
 running = True
+
+
+def check_shoot():
+    global now, last_shot
+    keystate = pygame.key.get_pressed()
+    if (keystate[pygame.K_SPACE]):
+        now = pygame.time.get_ticks()
+        if now - last_shot > SHOT_DELAY:
+            last_shot = now
+            bullet = Bullet(player.rect.centerx, player.rect.top)
+            all_sprites.add(bullet)
+
+
 while running:
     # clocks control how fast the loop will execute
     clock.tick(FPS)
@@ -98,14 +117,12 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                bullet = Bullet(player.rect.centerx, player.rect.centery)
-                all_sprites.add(bullet)
-    # keystate = pygame.key.get_pressed()
-    # if(keystate[pygame.K_SPACE]):
-    #     bullet = Bullet(player.rect.centerx,player.rect.centery)
-    #     all_sprites.add(bullet)
+        # if event.type == pygame.KEYDOWN:
+        #     if event.key == pygame.K_SPACE:
+        #         bullet = Bullet(player.rect.centerx, player.rect.centery)
+        #         all_sprites.add(bullet)
+
+    check_shoot()
     # update the state of sprites
 
     all_sprites.update()
