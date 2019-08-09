@@ -1,4 +1,5 @@
 import pygame
+import random
 
 HEIGHT = 600
 
@@ -24,9 +25,7 @@ class Player(pygame.sprite.Sprite):
         self.speedx = 8
 
     def update(self):
-
         self.keyEventHandling()
-
 
     def keyEventHandling(self):
         keystate = pygame.key.get_pressed()
@@ -41,15 +40,42 @@ class Player(pygame.sprite.Sprite):
         self.rect.y += dy
 
 
+class Meteor(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.size = random.randrange(1, 8)
+        self.image = pygame.Surface((self.size * 8, self.size * 8))
+        self.image.fill(RED)
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randrange(0, WIDTH)
+        self.rect.y = 0
+        self.speedx = random.randint(-5, 5)
+        self.speedy = random.randint(7, 15)
+
+    def update(self):
+        self.rect.x += self.speedx
+        self.rect.y += self.speedy
+        if(self.rect.y > HEIGHT):
+            all_sprites.add(Meteor())
+            self.kill()
+
+
+
+
+
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 
+meteors = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
 
-player = Player(WIDTH/2, HEIGHT-50)
-all_sprites.add(player)
+player = Player(WIDTH / 2, HEIGHT - 50)
+for i in range(8):
+    meteors.add(Meteor())
 
+all_sprites.add(player)
+all_sprites.add(meteors)
 running = True
 while running:
     # clocks control how fast the loop will execute
