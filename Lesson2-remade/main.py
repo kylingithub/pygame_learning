@@ -1,5 +1,6 @@
 import pygame
 import random
+from os import path
 
 SHOT_DELAY = 300
 
@@ -17,13 +18,19 @@ RED = (255, 0, 0)
 
 FPS = 30
 
+img_dir = path.join(path.dirname(__file__), 'img')
+sound_dir = path.join(path.dirname(__file__), 'sound')
+pygame.init()
+pygame.mixer.init()
+
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((30, 30))
-        # TODO shump img
-        self.image.fill(GREEN)
+        image = pygame.image.load(path.join(img_dir,"ship.png"))
+        self.image = pygame.transform.scale(image,(50,30))
+
+
         self.rect = self.image.get_rect()
         self.rect.centerx = x
         self.rect.centery = y
@@ -48,10 +55,10 @@ class Player(pygame.sprite.Sprite):
 class Meteor(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.size = random.randrange(1, 8)
-        self.image = pygame.Surface((self.size * 8, self.size * 8))
-        # TODO image
-        self.image.fill(RED)
+        self.size = random.randrange(3, 8)
+        image = pygame.image.load(path.join(img_dir,"meteor.png"))
+        self.image = pygame.transform.scale(image,(self.size * 8, self.size * 8))
+
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(0, WIDTH)
         self.rect.y = 0
@@ -69,8 +76,10 @@ class Meteor(pygame.sprite.Sprite):
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, posx, posy):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((5, 20))
-        self.image.fill(YELLOW)
+        # self.image = pygame.Surface((5, 20))
+        # self.image.fill(YELLOW)
+
+        self.image = pygame.image.load(path.join(img_dir,"laser_gun.png"))
         self.rect = self.image.get_rect()
         self.rect.centerx = posx
         self.rect.centery = posy
@@ -82,7 +91,7 @@ class Bullet(pygame.sprite.Sprite):
             self.kill()
 
 
-pygame.init()
+
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 
