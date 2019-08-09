@@ -1,7 +1,9 @@
-import pygame
 import random
 from os import path
 
+import pygame
+
+# TODO Refactor 將參數統一放到另外一個檔案
 SHOT_DELAY = 300
 
 YELLOW = (255, 255, 0)
@@ -46,6 +48,7 @@ class Player(pygame.sprite.Sprite):
             player.move(-self.speedx, 0)
         if keystate[pygame.K_RIGHT]:
             player.move(self.speedx, 0)
+        # TODO 01.新增上下移動
 
     def move(self, dx, dy):
         self.rect.x += dx
@@ -120,41 +123,34 @@ running = True
 sound_pew = pygame.mixer.Sound(path.join(sound_dir, "pew.wav"))
 
 
-def check_shoot():
-    global now, last_shot, bullets, all_sprites
-    keystate = pygame.key.get_pressed()
-    if (keystate[pygame.K_SPACE]):
-        now = pygame.time.get_ticks()
-        if now - last_shot > SHOT_DELAY:
-            last_shot = now
-            bullet = Bullet(player.rect.centerx, player.rect.top)
-            sound_pew.play()
-            bullets.add(bullet)
-            all_sprites.add(bullet)
 
 
 def check_meteor_hit_player():
     global running, meteors
-    hits = pygame.sprite.spritecollide(player, meteors, False, pygame.sprite.collide_rect_ratio(1))
+    # TODO 05.修正碰撞偵測的規則
+    hits = pygame.sprite.spritecollide(player, meteors, False)
     if hits:
         for hit in hits:
             hit.kill()
             # print("check_meteor_hit_player")
             newMeteor()
+            # TODO 修改死亡的規則，改成扣血扣到0時，遊戲才結束
             running = False
 
 
 def check_bullets_hit_meteor():
     global  score
-    hits = pygame.sprite.groupcollide(bullets, meteors, True, True, pygame.sprite.collide_rect_ratio(1))
+    # TODO 05.修正碰撞偵測的規則
+    hits = pygame.sprite.groupcollide(bullets, meteors, True, True)
     if hits:
         for hit in hits:
             hit.kill()
+            # TODO 02.修改加分的機制
             score += 1
             # print("check_bullets_hit_meteor")
             newMeteor()
-            # TODO explosion
-
+            # TODO 04.增加爆炸的動畫
+            # TODO 06.擊破隕石會掉出武器或是能量包 武器可以改變攻擊模式 能量包可以回血
 
 def draw_score():
     font = pygame.font.Font(font_name, 14)
@@ -165,20 +161,27 @@ def draw_score():
     pass
 
 
+def shoot():
+    sound_pew.play()
+    bullet = Bullet(player.rect.centerx, player.rect.centery)
+    bullets.add(bullet)
+    all_sprites.add(bullet)
+
+
 while running:
     # clocks control how fast the loop will execute
     clock.tick(FPS)
 
     # event trigger
+    # TODO 新增起始畫面 按下空白鍵才開始遊戲
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        # if event.type == pygame.KEYDOWN:
-        #     if event.key == pygame.K_SPACE:
-        #         bullet = Bullet(player.rect.centerx, player.rect.centery)
-        #         all_sprites.add(bullet)
+        if event.type == pygame.KEYDOWN:
+            # TODO 03.修正成子彈可以連發
+            if event.key == pygame.K_SPACE:
+                shoot()
 
-    check_shoot()
 
     # update the state of sprites
     check_meteor_hit_player()
@@ -190,8 +193,8 @@ while running:
     # draw on screen
 
     # screen.fill(BLACK)
-    screen.blit(bg,bg_rect)
     draw_score()
+    screen.blit(bg,bg_rect)
     all_sprites.draw(screen)
     # flip to display
     pygame.display.flip()
