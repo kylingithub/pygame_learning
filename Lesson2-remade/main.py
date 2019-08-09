@@ -20,17 +20,18 @@ FPS = 30
 
 img_dir = path.join(path.dirname(__file__), 'img')
 sound_dir = path.join(path.dirname(__file__), 'sound')
+font_name = pygame.font.match_font('arial')
 pygame.init()
 pygame.mixer.init()
+pygame.mixer.music.load(path.join(sound_dir, "bgm.mp3"))
+pygame.mixer.music.play(-1)
 
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        image = pygame.image.load(path.join(img_dir,"ship.png"))
-        self.image = pygame.transform.scale(image,(50,30))
-
-
+        image = pygame.image.load(path.join(img_dir, "ship.png"))
+        self.image = pygame.transform.scale(image, (50, 30))
         self.rect = self.image.get_rect()
         self.rect.centerx = x
         self.rect.centery = y
@@ -42,7 +43,6 @@ class Player(pygame.sprite.Sprite):
     def keyEventHandling(self):
         keystate = pygame.key.get_pressed()
         if keystate[pygame.K_LEFT]:
-            # print("move left")
             player.move(-self.speedx, 0)
         if keystate[pygame.K_RIGHT]:
             player.move(self.speedx, 0)
@@ -56,8 +56,8 @@ class Meteor(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.size = random.randrange(3, 8)
-        image = pygame.image.load(path.join(img_dir,"meteor.png"))
-        self.image = pygame.transform.scale(image,(self.size * 8, self.size * 8))
+        image = pygame.image.load(path.join(img_dir, "meteor.png"))
+        self.image = pygame.transform.scale(image, (self.size * 8, self.size * 8))
 
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(0, WIDTH)
@@ -76,10 +76,8 @@ class Meteor(pygame.sprite.Sprite):
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, posx, posy):
         pygame.sprite.Sprite.__init__(self)
-        # self.image = pygame.Surface((5, 20))
-        # self.image.fill(YELLOW)
 
-        self.image = pygame.image.load(path.join(img_dir,"laser_gun.png"))
+        self.image = pygame.image.load(path.join(img_dir, "laser_gun.png"))
         self.rect = self.image.get_rect()
         self.rect.centerx = posx
         self.rect.centery = posy
@@ -91,8 +89,16 @@ class Bullet(pygame.sprite.Sprite):
             self.kill()
 
 
+def newMeteor():
+    global all_sprites
+    m = Meteor()
+    meteors.add(m)
+    all_sprites.add(m)
+
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
+bg = pygame.image.load(path.join(img_dir,'background.png'))
+bg_rect = bg.get_rect()
 clock = pygame.time.Clock()
 
 meteors = pygame.sprite.Group()
@@ -101,16 +107,8 @@ bullets = pygame.sprite.Group()
 
 last_shot = pygame.time.get_ticks()
 now = 0
-
+score = 0
 player = Player(WIDTH / 2, HEIGHT - 50)
-
-
-def newMeteor():
-    global all_sprites
-    m = Meteor()
-    meteors.add(m)
-    all_sprites.add(m)
-
 
 for i in range(8):
     newMeteor()
@@ -119,6 +117,7 @@ all_sprites.add(bullets)
 all_sprites.add(player)
 all_sprites.add(meteors)
 running = True
+sound_pew = pygame.mixer.Sound(path.join(sound_dir, "pew.wav"))
 
 
 def check_shoot():
@@ -129,6 +128,7 @@ def check_shoot():
         if now - last_shot > SHOT_DELAY:
             last_shot = now
             bullet = Bullet(player.rect.centerx, player.rect.top)
+            sound_pew.play()
             bullets.add(bullet)
             all_sprites.add(bullet)
 
@@ -139,21 +139,30 @@ def check_meteor_hit_player():
     if hits:
         for hit in hits:
             hit.kill()
-            print("check_meteor_hit_player")
+            # print("check_meteor_hit_player")
             newMeteor()
             running = False
 
 
 def check_bullets_hit_meteor():
+    global  score
     hits = pygame.sprite.groupcollide(bullets, meteors, True, True, pygame.sprite.collide_rect_ratio(1))
-
     if hits:
         for hit in hits:
             hit.kill()
-            print("check_bullets_hit_meteor")
+            score += 1
+            # print("check_bullets_hit_meteor")
             newMeteor()
             # TODO explosion
-            # TODO add score
+
+
+def draw_score():
+    font = pygame.font.Font(font_name, 14)
+    text_surface = font.render(str(score), True, YELLOW)
+    text_rect = text_surface.get_rect()
+    text_rect.midtop = (WIDTH/2, 20)
+    screen.blit(text_surface, text_rect)
+    pass
 
 
 while running:
@@ -179,7 +188,10 @@ while running:
     all_sprites.update()
 
     # draw on screen
-    screen.fill(BLACK)
+
+    # screen.fill(BLACK)
+    screen.blit(bg,bg_rect)
+    draw_score()
     all_sprites.draw(screen)
     # flip to display
     pygame.display.flip()
