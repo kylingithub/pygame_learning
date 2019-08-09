@@ -22,6 +22,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface((30, 30))
+        # TODO shump img
         self.image.fill(GREEN)
         self.rect = self.image.get_rect()
         self.rect.centerx = x
@@ -49,6 +50,7 @@ class Meteor(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.size = random.randrange(1, 8)
         self.image = pygame.Surface((self.size * 8, self.size * 8))
+        # TODO image
         self.image.fill(RED)
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(0, WIDTH)
@@ -60,7 +62,7 @@ class Meteor(pygame.sprite.Sprite):
         self.rect.x += self.speedx
         self.rect.y += self.speedy
         if (self.rect.y > HEIGHT):
-            all_sprites.add(Meteor())
+            newMeteor()
             self.kill()
 
 
@@ -86,27 +88,63 @@ clock = pygame.time.Clock()
 
 meteors = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
+bullets = pygame.sprite.Group()
+
 last_shot = pygame.time.get_ticks()
-now =0
+now = 0
 
 player = Player(WIDTH / 2, HEIGHT - 50)
-for i in range(8):
-    meteors.add(Meteor())
 
+
+def newMeteor():
+    global all_sprites
+    m = Meteor()
+    meteors.add(m)
+    all_sprites.add(m)
+
+
+for i in range(8):
+    newMeteor()
+
+all_sprites.add(bullets)
 all_sprites.add(player)
 all_sprites.add(meteors)
 running = True
 
 
 def check_shoot():
-    global now, last_shot
+    global now, last_shot, bullets, all_sprites
     keystate = pygame.key.get_pressed()
     if (keystate[pygame.K_SPACE]):
         now = pygame.time.get_ticks()
         if now - last_shot > SHOT_DELAY:
             last_shot = now
             bullet = Bullet(player.rect.centerx, player.rect.top)
+            bullets.add(bullet)
             all_sprites.add(bullet)
+
+
+def check_meteor_hit_player():
+    global running, meteors
+    hits = pygame.sprite.spritecollide(player, meteors, False, pygame.sprite.collide_rect_ratio(1))
+    if hits:
+        for hit in hits:
+            hit.kill()
+            print("check_meteor_hit_player")
+            newMeteor()
+            running = False
+
+
+def check_bullets_hit_meteor():
+    hits = pygame.sprite.groupcollide(bullets, meteors, True, True, pygame.sprite.collide_rect_ratio(1))
+
+    if hits:
+        for hit in hits:
+            hit.kill()
+            print("check_bullets_hit_meteor")
+            newMeteor()
+            # TODO explosion
+            # TODO add score
 
 
 while running:
@@ -123,7 +161,11 @@ while running:
         #         all_sprites.add(bullet)
 
     check_shoot()
+
     # update the state of sprites
+    check_meteor_hit_player()
+    #
+    check_bullets_hit_meteor()
 
     all_sprites.update()
 
