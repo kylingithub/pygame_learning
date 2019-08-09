@@ -55,12 +55,25 @@ class Meteor(pygame.sprite.Sprite):
     def update(self):
         self.rect.x += self.speedx
         self.rect.y += self.speedy
-        if(self.rect.y > HEIGHT):
+        if (self.rect.y > HEIGHT):
             all_sprites.add(Meteor())
             self.kill()
 
 
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, posx, posy):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface((5, 20))
+        self.image.fill((255, 255, 0))
+        self.rect = self.image.get_rect()
+        self.rect.centerx = posx
+        self.rect.centery = posy
+        self.speedy = 10
 
+    def update(self):
+        self.rect.y -= self.speedy
+        if self.rect.bottom < 0:
+            self.kill()
 
 
 pygame.init()
@@ -85,7 +98,14 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                bullet = Bullet(player.rect.centerx, player.rect.centery)
+                all_sprites.add(bullet)
+    # keystate = pygame.key.get_pressed()
+    # if(keystate[pygame.K_SPACE]):
+    #     bullet = Bullet(player.rect.centerx,player.rect.centery)
+    #     all_sprites.add(bullet)
     # update the state of sprites
 
     all_sprites.update()
