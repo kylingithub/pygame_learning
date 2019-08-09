@@ -1,5 +1,9 @@
 import pygame
 
+HEIGHT = 600
+
+WIDTH = 800
+
 BLACK = (0, 0, 0)
 
 GREEN = (0, 255, 0)
@@ -15,8 +19,8 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.Surface((30, 30))
         self.image.fill(GREEN)
         self.rect = self.image.get_rect()
-        self.rect.centerx = x/2
-        self.rect.bottom = y
+        self.rect.centerx = x
+        self.rect.centery = y
         self.speedx = 8
 
     def update(self):
@@ -38,12 +42,12 @@ class Player(pygame.sprite.Sprite):
 
 
 pygame.init()
-screen = pygame.display.set_mode((800, 600))
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 
 all_sprites = pygame.sprite.Group()
 
-player = Player(750, 300)
+player = Player(WIDTH/2, HEIGHT-50)
 all_sprites.add(player)
 
 running = True
