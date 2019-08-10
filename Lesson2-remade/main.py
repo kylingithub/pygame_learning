@@ -49,6 +49,7 @@ class Player(pygame.sprite.Sprite):
         if keystate[pygame.K_RIGHT]:
             player.move(self.speedx, 0)
         # TODO 01.新增上下移動
+        # TODO 01.讓船不會飛出場外
 
     def move(self, dx, dy):
         self.rect.x += dx
@@ -100,7 +101,7 @@ def newMeteor():
 
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-bg = pygame.image.load(path.join(img_dir,'background.png'))
+bg = pygame.image.load(path.join(img_dir, 'background.png'))
 bg_rect = bg.get_rect()
 clock = pygame.time.Clock()
 
@@ -123,8 +124,6 @@ running = True
 sound_pew = pygame.mixer.Sound(path.join(sound_dir, "pew.wav"))
 
 
-
-
 def check_meteor_hit_player():
     global running, meteors
     # TODO 05.修正碰撞偵測的規則
@@ -134,12 +133,12 @@ def check_meteor_hit_player():
             hit.kill()
             # print("check_meteor_hit_player")
             newMeteor()
-            # TODO 修改死亡的規則，改成扣血扣到0時，遊戲才結束
+            # TODO 07.修改死亡的規則，改成扣血扣到0時，遊戲才結束
             running = False
 
 
 def check_bullets_hit_meteor():
-    global  score
+    global score
     # TODO 05.修正碰撞偵測的規則
     hits = pygame.sprite.groupcollide(bullets, meteors, True, True)
     if hits:
@@ -152,11 +151,12 @@ def check_bullets_hit_meteor():
             # TODO 04.增加爆炸的動畫
             # TODO 06.擊破隕石會掉出武器或是能量包 武器可以改變攻擊模式 能量包可以回血
 
+
 def draw_score():
     font = pygame.font.Font(font_name, 14)
     text_surface = font.render(str(score), True, YELLOW)
     text_rect = text_surface.get_rect()
-    text_rect.midtop = (WIDTH/2, 20)
+    text_rect.midtop = (WIDTH / 2, 20)
     screen.blit(text_surface, text_rect)
     pass
 
@@ -173,7 +173,7 @@ while running:
     clock.tick(FPS)
 
     # event trigger
-    # TODO 新增起始畫面 按下空白鍵才開始遊戲
+    # TODO 08.新增起始畫面 按下空白鍵才開始遊戲
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -181,7 +181,6 @@ while running:
             # TODO 03.修正成子彈可以連發
             if event.key == pygame.K_SPACE:
                 shoot()
-
 
     # update the state of sprites
     check_meteor_hit_player()
@@ -194,7 +193,7 @@ while running:
 
     # screen.fill(BLACK)
     draw_score()
-    screen.blit(bg,bg_rect)
+    screen.blit(bg, bg_rect)
     all_sprites.draw(screen)
     # flip to display
     pygame.display.flip()
